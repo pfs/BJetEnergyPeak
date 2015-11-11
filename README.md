@@ -11,7 +11,7 @@ scram b
 
 To run the event selection and basic filling of histograms do
 ```
-runBJetEnergyPeak.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -j samples_Run2015_25ns.json -o analysis -n 8
+runBJetEnergyPeak.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -j data/samples_Run2015_25ns.json -o analysis -n 8
 ```
 
 The results are stored in ROOT files and can be plotted together and compared to data using
