@@ -61,7 +61,7 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
 
         #generator level weight
         evWgt=1.0
-        if wgtH : evWgt=tree.ttbar_w[0]/wgtH.GetBinContent(1)
+        if wgtH : evWgt=tree.ttbar_w[0]*wgtH.GetBinContent(1)
 
         #ready to fill the histograms
         histos['nbtags'].Fill(nBtags,evWgt)
