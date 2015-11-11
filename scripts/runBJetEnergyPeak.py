@@ -112,9 +112,9 @@ def main():
     samplesList=json.load(jsonFile,encoding='utf-8').items()
     jsonFile.close()
 
-    #read normalization
+    #read normalization from cache
     xsecWgts, pileupWgts = {}, {}
-    cachefile = open('xsecweights.pck', 'r')
+    cachefile = open('%s/src/UserCode/BJetEnergyPeak/data/xsecweights.pck' % os.environ['CMSSW_BASE'], 'r')
     xsecWgts   = pickle.load(cachefile)
     pileupWgts = pickle.load(cachefile)
     cachefile.close()        
