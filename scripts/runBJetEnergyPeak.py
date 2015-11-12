@@ -69,8 +69,11 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
 
         #ready to fill the histograms
         histos['nbtags'].Fill(nBtags,evWgt)
-        for jp4 in taggedJetsP4: 
-            histos['bjeten'].Fill(jp4.E(),evWgt)
+
+        #use up to two leading b-tagged jets
+        for ij in xrange(0,len(taggedJetsP4)):
+            if ij>1 : break
+            histos['bjeten'].Fill(taggedJetsP4[ij].E(),evWgt)
         
     #all done with this file
     fIn.Close()
