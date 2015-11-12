@@ -30,6 +30,10 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
 
         tree.GetEntry(i)
 
+        #require trigger bits (first two for e-mu)
+        failTrigger = False if (((tree.ttbar_trigWord >>0) &1) or ((tree.ttbar_trigWord >>1) &1)) else True
+        if failTrigger : continue
+
         #require at least 2 leptons
         if tree.ttbar_nl<2: continue
 
