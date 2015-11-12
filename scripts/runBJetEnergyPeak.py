@@ -17,7 +17,7 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
     #book some histograms
     histos={ 
         'nbtags':ROOT.TH1F('nbtags',';b-tag multiplicity; Events',5,0,5),
-        'bjeten':ROOT.TH1F('bjeten',';Energy [GeV]; Jets',100,0,200)
+        'bjeten':ROOT.TH1F('bjeten',';Energy [GeV]; Jets',30,0,300)
         }
     for key in histos:
         histos[key].Sumw2()
