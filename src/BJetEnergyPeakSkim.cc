@@ -1,9 +1,9 @@
-#include "UserCode/BJetEnergyPeak/interface/BJetEnergyPeakAnalysis.h"
+#include "UserCode/BJetEnergyPeak/interface/BJetEnergyPeakSkim.h"
 
 using namespace std;
 
 //
-BJetEnergyPeakAnalysis::BJetEnergyPeakAnalysis(TString outDir) : outDir_(outDir)
+BJetEnergyPeakSkim::BJetEnergyPeakSkim(TString outDir) : outDir_(outDir)
 {
   //read pileup weights
   TString puWgtUrl("${CMSSW_BASE}/src/TopLJets2015/UserCode/BJetEnergyPeak/pileupWgts.root");
@@ -49,7 +49,7 @@ BJetEnergyPeakAnalysis::BJetEnergyPeakAnalysis(TString outDir) : outDir_(outDir)
 }
 
 //
-void BJetEnergyPeakAnalysis::processFile(TString inFile,TH1F *xsecWgt,Bool_t isData)
+void BJetEnergyPeakSkim::processFile(TString inFile,TH1F *xsecWgt,Bool_t isData)
 {
   BTagSummaryEvent_t ev;
 
@@ -233,7 +233,7 @@ void BJetEnergyPeakAnalysis::processFile(TString inFile,TH1F *xsecWgt,Bool_t isD
 }
 
 //Source (50ns) : CMS AN 022/2015 v15
-std::pair<float,float> BJetEnergyPeakAnalysis::getLeptonSelectionEfficiencyScaleFactor(int id,float pt,float eta)
+std::pair<float,float> BJetEnergyPeakSkim::getLeptonSelectionEfficiencyScaleFactor(int id,float pt,float eta)
 {
   std::pair<float,float>res(1.0,0.0);
  
@@ -293,7 +293,7 @@ std::pair<float,float> BJetEnergyPeakAnalysis::getLeptonSelectionEfficiencyScale
 }
 
 //Source:  https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
-std::vector<float> BJetEnergyPeakAnalysis::getJetResolutionScales(float pt, float eta, float genjpt)
+std::vector<float> BJetEnergyPeakSkim::getJetResolutionScales(float pt, float eta, float genjpt)
 {
   std::vector<float> res(3,1.0);
 

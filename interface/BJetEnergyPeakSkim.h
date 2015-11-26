@@ -1,5 +1,5 @@
-#ifndef _BJetEnergyPeakAnalysis_h_
-#define _BJetEnergyPeakAnalysis_h_
+#ifndef _BJetEnergyPeakSkim_h_
+#define _BJetEnergyPeakSkim_h_
 
 #include "TFile.h"
 #include "TH1F.h"
@@ -20,18 +20,18 @@
 
 
 /**
-   @class BJetEnergyPeakAnalysis
+   @class BJetEnergyPeakSkim
    @short wrapper to skim events for the b-jet energy peak analysis
    @author psilva@cern.ch
  */
 
-class BJetEnergyPeakAnalysis
+class BJetEnergyPeakSkim
 {
  public:
   /**
      @short CTOR
    */
-  BJetEnergyPeakAnalysis(TString outDir);
+  BJetEnergyPeakSkim(TString outDir);
 
   /**
      @short read a file and dump the output 
@@ -41,7 +41,7 @@ class BJetEnergyPeakAnalysis
   /**
      @short DTOR
    */
-  ~BJetEnergyPeakAnalysis(){}
+  ~BJetEnergyPeakSkim(){}
 
  private:
 
