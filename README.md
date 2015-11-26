@@ -19,7 +19,7 @@ It skims the information needed for the analysis in simplified ntuples.
 The starting point are the BTV performance ntuples. Further details on how to produce them can be found in 
 https://twiki.cern.ch/twiki/bin/view/CMS/BTagCommissioning2015. Before skimming three steps must be done:
 
-* Determine the pileup weights: the output is a ROOT file: data/pileupWgts.root. Run the following script
+* Determine the pileup weights: the output is a pickle file: data/puweights.pck. Run the following script
 ```
 python scripts/runPileupEstimation.py 
 ```
@@ -27,21 +27,27 @@ python scripts/runPileupEstimation.py
 ```
 python scripts/produceNormalizationCache.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3
 ```
-* Project the expected b-tagging efficiency for the TTbar sample
+* Project the expected b-tagging efficiency for the TTbar sample. The output is a pickle file: btagefficiencies. Run the following script
 ```
-python scripts/saveExpectedBtagEff.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3
+python scripts/projectExpectedBtagEff.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3/MC13TeV_TTJets
+```
+The files above will be stored by default in github, but if a reprocessing of the original ntuples occurs,
+they need to be run again. For the pileup estimation one needs to use the original json file (check with BTV experts).
+With the files updated you're now ready to skim the info needed for the ntuples. Just run
+```
+python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3/MC13TeV_TTJets -o ntuples
 ```
 
-In the following I assume you run the code inside the UserCode/BJetEnergyPeak directory.
+## Producing and plotting a simple b-jet energy peak distribution
 
-
-
+The following is an example of how to run locally over the skimmed ntuples to produce the b-jet energy peak.
 To run the event selection and basic filling of histograms do
 ```
-runBJetEnergyPeak.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -j data/samples_Run2015_25ns.json -o analysis -n 8
+python scripts/runBJetEnergyPeak.py -i ntuples -j data/samples_Run2015_25ns.json -o analysis -n 8
 ```
-
 The results are stored in ROOT files and can be plotted together and compared to data using
 ```
-plotter.py -i analysis/ -j data/samples_Run2015_25ns.json  -l 1615 
+python scripts/plotter.py -i analysis/ -j data/samples_Run2015_25ns.json  -l 2444.
 ```
+Under analysis/plots you'll find the files with the plots and also a file called plotter.root containing the histograms with the distributions
+normalized by integrated luminosity.

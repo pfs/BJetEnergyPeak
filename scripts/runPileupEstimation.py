@@ -1,9 +1,12 @@
 import optparse
 import os,sys
-import json
+import pickle
 import commands
 import ROOT
 from SimGeneral.MixingModule.mix_2015_25ns_Startup_PoissonOOTPU_cfi import *
+
+MBXSEC=69000.
+PUSCENARIOS={'nom':MBXSEC,'up':MBXSEC*1.1,'down':MBXSEC*0.9}
 
 """
 steer the script
@@ -18,11 +21,6 @@ def main():
                       help='json file with processed runs',      
                       default='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt',
                       type='string')
-    parser.add_option('--mbXsec',    
-                      dest='mbXsec'  ,
-                      help='minimum bias cross section to use',  
-                      default=69000,  
-                      type=float)
     parser.add_option('--puJson',    
                       dest='puJson'  ,
                       help='pileup json file',      
@@ -39,31 +37,31 @@ def main():
     simPuH.Scale(1./simPuH.Integral())
 
     #compute pileup in data assuming different xsec
-    puDist=[]
-    puWgts=[]
-    MINBIASXSEC={'nom':opt.mbXsec,'up':opt.mbXsec*1.1,'down':opt.mbXsec*0.9}
-    for scenario in MINBIASXSEC:
-        print scenario, 'xsec=',MINBIASXSEC[scenario]
-        cmd='pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec %f --maxPileupBin %d --numPileupBins %s Pileup.root'%(opt.inJson,opt.puJson,MINBIASXSEC[scenario],NPUBINS,NPUBINS)
+    puWgts,puDists={},{}
+    for scenario in PUSCENARIOS:
+        print scenario, 'xsec=',PUSCENARIOS[scenario]
+        cmd='pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec %f --maxPileupBin %d --numPileupBins %s Pileup.root'%(opt.inJson,opt.puJson,PUSCENARIOS[scenario],NPUBINS,NPUBINS)
         commands.getstatusoutput(cmd)
 
         fIn=ROOT.TFile.Open('Pileup.root')
         pileupH=fIn.Get('pileup')
         pileupH.Scale(1./pileupH.Integral())
-        puDist.append( ROOT.TGraph(pileupH) )
-        puDist[-1].SetName('pu_'+scenario)
+        puDists[scenario]=ROOT.TGraph(pileupH)
+        puDists[scenario].SetName('pu_'+scenario)
 
         pileupH.Divide(simPuH)
-        puWgts.append( ROOT.TGraph(pileupH) )
-        puWgts[-1].SetName('puwgts_'+scenario)
+        puWgts[scenario]=ROOT.TGraph(pileupH)
+        puWgts[scenario].SetName('puwgts_'+scenario)
         fIn.Close()
     commands.getstatusoutput('rm Pileup.root')
 
-    #save pileup weights to file
-    fOut=ROOT.TFile.Open('$CMSSW_BASE/src/UserCode/BJetEnergyPeak/data/pileupWgts.root','RECREATE')
-    for gr in puWgts: gr.Write()
-    for gr in puDist: gr.Write()
-    fOut.Close()
+    #dump to pickle file                                                                                                                                                                                          
+    cache='%s/src/UserCode/BJetEnergyPeak/data/puweights.pck' % os.environ['CMSSW_BASE']
+    cachefile=open(cache,'w')
+    pickle.dump(puWgts,  cachefile, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(puDists, cachefile, pickle.HIGHEST_PROTOCOL)
+    cachefile.close()
+    print 'Produced normalization cache for pileup weights @ %s'%cache
 
 """
 for execution from another script
