@@ -33,17 +33,17 @@ python scripts/projectExpectedBtagEff.py -i /store/group/phys_btag/performance/T
 ```
 The files above will be stored by default in github, but if a reprocessing of the original ntuples occurs,
 they need to be run again. For the pileup estimation one needs to use the original json file (check with BTV experts).
-With the files updated you're now ready to skim the info needed for the ntuples. Just run
+With the files updated you're now ready to skim the info needed for the ntuples. You can run the following command
 ```
-python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3/MC13TeV_TTJets -o ntuples
+python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -o analysis -n 8
 ```
 
 ## Producing and plotting a simple b-jet energy peak distribution
 
 The following is an example of how to run locally over the skimmed ntuples to produce the b-jet energy peak.
-To run the event selection and basic filling of histograms do
+To run the event selection and basic filling of histograms using a pre-defined list of samples and cross sections one can use the following script 
 ```
-python scripts/runBJetEnergyPeak.py -i ntuples -j data/samples_Run2015_25ns.json -o analysis -n 8
+python scripts/runBJetEnergyPeak.py -i analysis -j data/samples_Run2015_25ns.json -o analysis/plots -n 8
 ```
 The results are stored in ROOT files and can be plotted together and compared to data using
 ```
