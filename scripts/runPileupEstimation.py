@@ -56,11 +56,12 @@ def main():
     commands.getstatusoutput('rm Pileup.root')
 
     #dump to pickle file                                                                                                                                                                                          
-    cache='%s/src/UserCode/BJetEnergyPeak/data/puweights.pck' % os.environ['CMSSW_BASE']
-    cachefile=open(cache,'w')
-    pickle.dump(puWgts,  cachefile, pickle.HIGHEST_PROTOCOL)
-    pickle.dump(puDists, cachefile, pickle.HIGHEST_PROTOCOL)
-    cachefile.close()
+    cache='%s/src/UserCode/BJetEnergyPeak/data/puweights.root' % os.environ['CMSSW_BASE']
+    cachefile=ROOT.TFile.Open(cache,'RECREATE')
+    for scenario in puWgts:
+        puWgts[scenario].Write()
+        puDists[scenario].Write()
+    cachefile.Close()
     print 'Produced normalization cache for pileup weights @ %s'%cache
 
 """

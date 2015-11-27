@@ -19,7 +19,7 @@ It skims the information needed for the analysis in simplified ntuples.
 The starting point are the BTV performance ntuples. Further details on how to produce them can be found in 
 https://twiki.cern.ch/twiki/bin/view/CMS/BTagCommissioning2015. Before skimming three steps must be done:
 
-* Determine the pileup weights: the output is a pickle file: data/puweights.pck. Run the following script
+* Determine the pileup weights: the output is a ROOT file: data/puweights.root. Run the following script
 ```
 python scripts/runPileupEstimation.py 
 ```

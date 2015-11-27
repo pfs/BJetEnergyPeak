@@ -3,10 +3,10 @@
 using namespace std;
 
 //
-BJetEnergyPeakSkim::BJetEnergyPeakSkim(TString outDir) : outDir_(outDir)
+BJetEnergyPeakSkim::BJetEnergyPeakSkim()
 {
   //read pileup weights
-  TString puWgtUrl("${CMSSW_BASE}/src/TopLJets2015/UserCode/BJetEnergyPeak/pileupWgts.root");
+  TString puWgtUrl("${CMSSW_BASE}/src/UserCode/BJetEnergyPeak/data/puweights.root");
   gSystem->ExpandPathName(puWgtUrl);
   TFile *fIn=TFile::Open(puWgtUrl);
   puWgtGr_.push_back( (TGraph *)fIn->Get("puwgts_nom") );
@@ -14,12 +14,16 @@ BJetEnergyPeakSkim::BJetEnergyPeakSkim(TString outDir) : outDir_(outDir)
   puWgtGr_.push_back( (TGraph *)fIn->Get("puwgts_up") );
   fIn->Close();
   
-  //JES uncertainties
-  jecUncSrcs_.push_back("Absolute");        
-  jecUncSrcs_.push_back("HighPtExtra");    
+  //JES uncertainties https://twiki.cern.ch/twiki/bin/view/CMS/JECUncertaintySources#Summer15_uncertainties
+  jecUncSrcs_.push_back("AbsoluteStat");        
+  jecUncSrcs_.push_back("AbsoluteScale");        
+  jecUncSrcs_.push_back("AbsoluteFlavMap");        
+  jecUncSrcs_.push_back("AbsoluteMPFBias");        
+  jecUncSrcs_.push_back("Fragmentation");        
   jecUncSrcs_.push_back("SinglePionECAL");  
   jecUncSrcs_.push_back("SinglePionHCAL"); 
-  jecUncSrcs_.push_back("Time");
+  jecUncSrcs_.push_back("TimeEta");
+  jecUncSrcs_.push_back("TimePt");
   jecUncSrcs_.push_back("RelativeJEREC1");  
   jecUncSrcs_.push_back("RelativeJEREC2"); 
   jecUncSrcs_.push_back("RelativeJERHF");
@@ -28,13 +32,14 @@ BJetEnergyPeakSkim::BJetEnergyPeakSkim(TString outDir) : outDir_(outDir)
   jecUncSrcs_.push_back("RelativePtEC2");   
   jecUncSrcs_.push_back("RelativePtHF");  
   jecUncSrcs_.push_back("RelativeFSR");
-  jecUncSrcs_.push_back("RelativeStatEC2"); 
+  jecUncSrcs_.push_back("RelativeStatEC"); 
   jecUncSrcs_.push_back("RelativeStatHF");
   jecUncSrcs_.push_back("PileUpDataMC");    
+  jecUncSrcs_.push_back("PileUpPtRef");    
   jecUncSrcs_.push_back("PileUpPtBB");     
-  jecUncSrcs_.push_back("PileUpPtEC");      
+  jecUncSrcs_.push_back("PileUpPtEC1");      
+  jecUncSrcs_.push_back("PileUpPtEC2");      
   jecUncSrcs_.push_back("PileUpPtHF");    
-  jecUncSrcs_.push_back("PileUpBias");
   jecUncSrcs_.push_back("FlavorPureGluon"); 
   jecUncSrcs_.push_back("FlavorPureQuark");
   jecUncSrcs_.push_back("FlavorPureCharm"); 
@@ -49,21 +54,21 @@ BJetEnergyPeakSkim::BJetEnergyPeakSkim(TString outDir) : outDir_(outDir)
 }
 
 //
-void BJetEnergyPeakSkim::processFile(TString inFile,TH1F *xsecWgt,Bool_t isData)
+void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecWgt,Bool_t isData)
 {
   BTagSummaryEvent_t ev;
 
   Float_t LepSelEffWeights[3]={1.0,1.0,1.0};
   Float_t PUWeights[3]={1.0,1.0,1.0};
-  Float_t JetUncs[100][25];
+  Float_t JetUncs[100][29];
   for(Int_t i=0; i<100; i++)
-    for(Int_t j=0; j<25; j++)
+    for(Int_t j=0; j<29; j++)
       JetUncs[i][j]=1.0;
 
   //prepare output file
-  TString outFile(Form("%s/%s",outDir_.Data(),gSystem->BaseName(inFile)));
-  TFile *outF=TFile::Open(outFile);
+  TFile *outF=TFile::Open(outFile,"RECREATE");
   TTree *outT=new TTree("data","data");
+  outT->SetDirectory(outF);
   outT->Branch("Run"        ,    &ev.Run,            "Run/I");
   outT->Branch("Evt"        ,    &ev.Evt,            "Evt/I");
   outT->Branch("LumiBlock"  ,    &ev.LumiBlock,      "LumiBlock/I");
@@ -76,15 +81,15 @@ void BJetEnergyPeakSkim::processFile(TString inFile,TH1F *xsecWgt,Bool_t isData)
   outT->Branch("Lepton_pt"  ,     ev.ttbar_lpt,      "Lepton_pt[nLepton]/F"); 
   outT->Branch("Lepton_eta" ,     ev.ttbar_leta,     "Lepton_eta[nLepton]/F");
   outT->Branch("Lepton_phi" ,     ev.ttbar_lphi,     "Lepton_phi[nLepton]/F");
-  outT->Branch("Lepton_id"  ,     ev.ttbar_lid,      "Lepton_id[nLepton]/F");
-  outT->Branch("Lepton_gid" ,     ev.ttbar_lgid,     "Lepton_gid[nLepton]/F");
-  outT->Branch("Lepton_ch"  ,     ev.ttbar_lch,      "Lepton_ch[nLepton]/F");
+  outT->Branch("Lepton_id"  ,     ev.ttbar_lid,      "Lepton_id[nLepton]/I");
+  outT->Branch("Lepton_gid" ,     ev.ttbar_lgid,     "Lepton_gid[nLepton]/I");
+  outT->Branch("Lepton_ch"  ,     ev.ttbar_lch,      "Lepton_ch[nLepton]/I");
   outT->Branch("MET_pt",         &ev.ttbar_metpt,    "MET_pt");
   outT->Branch("MET_phi",        &ev.ttbar_metphi,   "MET_phi");
   outT->Branch("nGenWeight",     &ev.ttbar_nw,       "nGenWeight");
   outT->Branch("GenWeights",      ev.ttbar_w,        "GenWeights[nGenWeight]/F");
   outT->Branch("nJet",           &ev.nJet,           "nJet/I");
-  outT->Branch("Jet_uncs",        JetUncs,           "Jet_uncs[nJet][25]/F");
+  outT->Branch("Jet_uncs",        JetUncs,           "Jet_uncs[nJet][29]/F");
   outT->Branch("Jet_pt",          ev.Jet_pt,         "Jet_pt[nJet]/F");
   outT->Branch("Jet_genpt",       ev.Jet_genpt,      "Jet_genpt[nJet]/F");
   outT->Branch("Jet_eta",         ev.Jet_eta,        "Jet_eta[nJet]/F");
@@ -222,13 +227,16 @@ void BJetEnergyPeakSkim::processFile(TString inFile,TH1F *xsecWgt,Bool_t isData)
 	  //update last jet selected
 	  lastSelJetIdx=ij;
 	}
-
+      
       if(lastSelJetIdx<1) continue;
+      ev.nJet=lastSelJetIdx+1;
       outT->Fill();
     }
 
   //all done
   inF->Close();
+  outF->cd();
+  outT->Write();
   outF->Close();
 }
 

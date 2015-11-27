@@ -31,12 +31,12 @@ class BJetEnergyPeakSkim
   /**
      @short CTOR
    */
-  BJetEnergyPeakSkim(TString outDir);
+  BJetEnergyPeakSkim();
 
   /**
      @short read a file and dump the output 
    */
-  void processFile(TString inFile,TH1F *xsecWgt,Bool_t isData);
+  void processFile(TString inFile, TString outFile,TH1F *xsecWgt,Bool_t isData);
 
   /**
      @short DTOR
@@ -54,9 +54,6 @@ class BJetEnergyPeakSkim
      @short hardocded jet energy resolutions
    */
   std::vector<float> getJetResolutionScales(float pt, float eta, float genjpt);
-
-  //output directory
-  TString outDir_;
 
   //pileup weighting graphs
   std::vector<TGraph *>puWgtGr_;
