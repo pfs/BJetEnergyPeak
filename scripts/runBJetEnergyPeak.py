@@ -10,12 +10,13 @@ from subprocess import Popen, PIPE
 """
 Perform the analysis on a single file
 """
-def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
+def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
 
     print '...analysing %s' % inFileURL
 
     #book some histograms
     histos={ 
+        'nvtx'  :ROOT.TH1F('nvtx',';Vertex multiplicity; Events',30,0,30),
         'nbtags':ROOT.TH1F('nbtags',';b-tag multiplicity; Events',5,0,5),
         'bjeten':ROOT.TH1F('bjeten',';Energy [GeV]; Jets',30,0,300)
         }
@@ -25,23 +26,10 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
 
     #open file and loop over events tree
     fIn=ROOT.TFile.Open(inFileURL)
-    tree=fIn.Get('btagana/ttree')
+    tree=fIn.Get('data')
     for i in xrange(0,tree.GetEntriesFast()):
 
         tree.GetEntry(i)
-
-        #require trigger bits (first two for e-mu)
-        failTrigger = False if (((tree.ttbar_trigWord >>0) &1) or ((tree.ttbar_trigWord >>1) &1)) else True
-        if failTrigger : continue
-
-        #require at least 2 leptons
-        if tree.ttbar_nl<2: continue
-
-        #require events in the e-mu channel
-        if tree.ttbar_lid[0]*tree.ttbar_lid[1]!=11*13 : continue
-
-        #require op. charge
-        if tree.ttbar_lch[0]*tree.ttbar_lch[1]>0 : continue
 
         #require at least two jets
         nJets, nBtags = 0, 0
@@ -63,11 +51,13 @@ def runBJetEnergyPeak(inFileURL, outFileURL, wgtH):
         
         if nJets<2 : continue
 
-        #generator level weight
+        #generator level weight only for MC
         evWgt=1.0
-        if wgtH : evWgt=tree.ttbar_w[0]*wgtH.GetBinContent(1)
+        if xsec               : evWgt  = xsec*tree.LepSelEffWeights[0]*tree.PUWeights[0]
+        if tree.nGenWeights>0 : evWgt *= tree.GenWeights[0]
 
         #ready to fill the histograms
+        histos['nvtx'].Fill(tree.nPV,evWgt)
         histos['nbtags'].Fill(nBtags,evWgt)
 
         #use up to two leading b-tagged jets
@@ -92,7 +82,7 @@ def runBJetEnergyPeakPacked(args):
     try:
         return runBJetEnergyPeak(inFileURL=args[0],
                                  outFileURL=args[1],
-                                 wgtH=args[2])
+                                 xsec=args[2])
     except :
         print 50*'<'
         print "  Problem  (%s) with %s continuing without"%(sys.exc_info()[1],args[0])
@@ -119,51 +109,31 @@ def main():
     samplesList=json.load(jsonFile,encoding='utf-8').items()
     jsonFile.close()
 
-    #read normalization from cache
-    xsecWgts, pileupWgts = {}, {}
-    cachefile = open('%s/src/UserCode/BJetEnergyPeak/data/xsecweights.pck' % os.environ['CMSSW_BASE'], 'r')
-    xsecWgts   = pickle.load(cachefile)
-    pileupWgts = pickle.load(cachefile)
-    cachefile.close()        
-
-    #mount locally EOS
-    eos_cmd = '/afs/cern.ch/project/eos/installation/0.2.41/bin/eos.select'
-    Popen([eos_cmd, ' -b fuse mount', 'eos'],stdout=PIPE).communicate()
-
     #prepare output
-    if len(opt.outDir) :  os.system('mkdir -p %s' % opt.outDir)
+    if len(opt.outDir)==0    : opt.outDir='./'
+    if opt.outDir==opt.inDir : opt.outDir+='/analysis'
+    os.system('mkdir -p %s' % opt.outDir)
         
     #create the analysis jobs
     taskList = []
-    for tag,sample in samplesList:
-
-        fileList=os.listdir( 'eos/cms/%s/%s' % (opt.inDir,tag) )
-        wgtH = xsecWgts[tag]
-        for ifile in xrange(0,len(fileList)):
-            #inFileURL  = 'root://eoscms//eos/cms/%s/%s/%s' % (opt.inDir, tag, fileList[ifile])
-            inFileURL  = 'eos/cms/%s/%s/%s' % (opt.inDir, tag, fileList[ifile])
-            outFileURL = '%s/%s_%d.root' % (opt.outDir,tag,ifile)
-            taskList.append( (inFileURL,outFileURL,wgtH) )
+    for sample, sampleInfo in samplesList: 
+        inFileURL  = '%s/%s.root' % (opt.inDir,sample)
+        if not os.path.isfile(inFileURL): continue
+        xsec=sampleInfo[0] if sampleInfo[1]==0 else None        
+        outFileURL = '%s/%s.root' % (opt.outDir,sample)
+        taskList.append( (inFileURL,outFileURL,xsec) )
 
     #run the analysis jobs
     if opt.njobs == 0:
-        for inFileURL, outFileURL, wgtH in taskList:
-            runBJetEnergyPeak(inFileURL=inFileURL, outFileURL=outFileURL, wgtH=wgtH)
+        for inFileURL, outFileURL, xsec in taskList:
+            runBJetEnergyPeak(inFileURL=inFileURL, outFileURL=outFileURL, xsec=xsec)
     else:
         from multiprocessing import Pool
         pool = Pool(opt.njobs)
         pool.map(runBJetEnergyPeakPacked,taskList)
 
-    #unmount locally EOS
-    Popen([eos_cmd, ' -b fuse umount', 'eos'],stdout=PIPE).communicate()
-
-    #merge the outputs
-    for tag,_ in samplesList:
-        os.system('hadd -f %s/%s.root %s/%s_*.root' % (opt.outDir,tag,opt.outDir,tag) )
-        os.system('rm %s/%s_*.root' % (opt.outDir,tag) )
-    print 'Analysis results are available in %s' % opt.outDir
-
     #all done here
+    print 'Analysis results are available in %s' % opt.outDir
     exit(0)
 
 

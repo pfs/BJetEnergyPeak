@@ -86,7 +86,7 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
   outT->Branch("Lepton_ch"  ,     ev.ttbar_lch,      "Lepton_ch[nLepton]/I");
   outT->Branch("MET_pt",         &ev.ttbar_metpt,    "MET_pt");
   outT->Branch("MET_phi",        &ev.ttbar_metphi,   "MET_phi");
-  outT->Branch("nGenWeight",     &ev.ttbar_nw,       "nGenWeight");
+  outT->Branch("nGenWeight",     &ev.ttbar_nw,       "nGenWeight/I");
   outT->Branch("GenWeights",      ev.ttbar_w,        "GenWeights[nGenWeight]/F");
   outT->Branch("nJet",           &ev.nJet,           "nJet/I");
   outT->Branch("Jet_uncs",        JetUncs,           "Jet_uncs[nJet][29]/F");

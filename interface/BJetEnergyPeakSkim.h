@@ -41,7 +41,10 @@ class BJetEnergyPeakSkim
   /**
      @short DTOR
    */
-  ~BJetEnergyPeakSkim(){}
+  ~BJetEnergyPeakSkim()
+    {
+      for(size_t i=0; i<jecUncs_.size(); i++) delete jecUncs_[i];
+    }
 
  private:
 

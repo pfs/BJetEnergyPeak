@@ -47,7 +47,7 @@ def main():
     ROOT.gROOT.LoadMacro('src/BJetEnergyPeakSkim.cc+')
 
     #prepare output
-    os.system('mkdir -p %s'%opt.outDir)
+    os.system('mkdir -p %s/Chunks'%opt.outDir)
 
     #read normalization from cache   
     cachefile = open('%s/src/UserCode/BJetEnergyPeak/data/genweights.pck' % os.environ['CMSSW_BASE'], 'r')
@@ -61,10 +61,10 @@ def main():
     
     #create the analysis jobs
     taskList = []
-    samplesList=[]
+    samplesList={}
     for sample in os.listdir('eos/cms/%s' % opt.inDir):
 
-        samplesList.append(sample)
+        samplesList[sample]=''
 
         isData=True if 'Data13TeV' in sample else False
         wgtH=genweights[sample] if (sample in genweights and not isData) else None
@@ -73,8 +73,8 @@ def main():
         for ifile in xrange(0,len(sampleFiles)):
             
             inFile  = 'root://eoscms//eos/cms/%s/%s/%s' % (opt.inDir, sample, sampleFiles[ifile])
-            outFile = '%s/%s_%d.root' % (opt.outDir,sample,ifile)
-
+            outFile = '%s/Chunks/%s_%d.root' % (opt.outDir,sample,ifile)
+            samplesList[sample]+= outFile + ' '
             taskList.append( (inFile,outFile,wgtH,isData) )
 
     #run the analysis jobs
@@ -91,9 +91,8 @@ def main():
 
     #merge the outputs
     for sample in samplesList:
-        os.system('hadd -f %s/%s.root %s/%s_*.root' % (opt.outDir,sample,opt.outDir,sample) )
-        os.system('rm %s/%s_*.root' % (opt.outDir,tag) )
-    print 'Skimmed ntuples are available in %s' % opt.outDir
+        os.system('hadd -f %s/%s.root %s' % (opt.outDir,sample,opt.outDir,samplesList[sample]) )
+    print 'Skimmed ntuples (chunks) are available in %s(/Chunks)' % opt.outDir
 
     #all done here
     exit(0)
