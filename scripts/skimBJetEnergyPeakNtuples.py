@@ -78,10 +78,10 @@ def main():
             taskList.append( (inFile,outFile,wgtH,isData) )
 
     #run the analysis jobs
-    if opt.njobs == 0:
+    if opt.njobs == 1:
         for inFile,outFile,wgtH,isData in taskList:
             skimBJetEnergyPeakNtuples(inFile,outFile,wgtH,isData)
-    else:
+    elif opt.njobs>1:
         from multiprocessing import Pool
         pool = Pool(opt.njobs)
         pool.map(skimBJetEnergyPeakNtuplesPacked,taskList)
@@ -91,7 +91,7 @@ def main():
 
     #merge the outputs
     for sample in samplesList:
-        os.system('hadd -f %s/%s.root %s' % (opt.outDir,sample,opt.outDir,samplesList[sample]) )
+        os.system('hadd -f %s/%s.root %s' % (opt.outDir,sample,samplesList[sample]) )
     print 'Skimmed ntuples (chunks) are available in %s(/Chunks)' % opt.outDir
 
     #all done here
