@@ -225,11 +225,11 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
 	    }
 
 	  //update last jet selected
-	  lastSelJetIdx=ij;
+	  lastSelJetIdx++;
 	}
       
-      if(lastSelJetIdx<1) continue;
-      ev.nJet=lastSelJetIdx+1;
+      if(lastSelJetIdx<2) continue;
+      ev.nJet=lastSelJetIdx;
       outT->Fill();
     }
 
