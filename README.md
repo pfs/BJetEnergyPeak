@@ -38,6 +38,13 @@ With the files updated you're now ready to skim the info needed for the ntuples.
 python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -o analysis -n 8
 ```
 
+## Ntuple content
+
+Variable | Comments
+--------------------
+Run | run number
+
+
 ## Producing and plotting a simple b-jet energy peak distribution
 
 The following is an example of how to run locally over the skimmed ntuples to produce the b-jet energy peak.
