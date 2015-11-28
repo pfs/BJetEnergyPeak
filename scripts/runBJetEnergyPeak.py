@@ -27,10 +27,11 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
     #open file and loop over events tree
     fIn=ROOT.TFile.Open(inFileURL)
     tree=fIn.Get('data')
-    for i in xrange(0,tree.GetEntriesFast()):
+    totalEntries=tree.GetEntriesFast()
+    for i in xrange(0,totalEntries):
 
         tree.GetEntry(i)
-
+        if i%100==0 : sys.stdout.write('\r [ %d/100 ] done' %(int(float(100.*i)/float(totalEntries))) )
         #require at least two jets
         nJets, nBtags = 0, 0
         taggedJetsP4=[]
@@ -53,8 +54,8 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
 
         #generator level weight only for MC
         evWgt=1.0
-        if xsec               : evWgt  = xsec*tree.LepSelEffWeights[0]*tree.PUWeights[0]
-        if tree.nGenWeights>0 : evWgt *= tree.GenWeights[0]
+        if xsec              : evWgt  = xsec*tree.LepSelEffWeights[0]*tree.PUWeights[0]
+        if tree.nGenWeight>0 : evWgt *= tree.GenWeights[0]
 
         #ready to fill the histograms
         histos['nvtx'].Fill(tree.nPV,evWgt)

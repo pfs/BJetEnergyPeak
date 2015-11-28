@@ -104,10 +104,10 @@
 		    809
 ],
 
-"Data13TeV_MuonEG_2015D_v3" : [
+"Data13TeV_MuonEG_2015D_05Oct" : [
 			    1, 
 			    1, 
-			    "/MuonEG/Run2015D-PromptReco-v3/MINIAOD", 
+			    "/MuonEG/Run2015D-05Oct-v2/MINIAOD", 
 			    "Data", 
 			    1
 ],
