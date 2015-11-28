@@ -54,7 +54,7 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
 
         #generator level weight only for MC
         evWgt=1.0
-        if xsec              : evWgt  = xsec*tree.LepSelEffWeights[0]*tree.PUWeights[0]
+        if xsec              : evWgt  = xsec*tree.PUWeights[0] #*tree.LepSelEffWeights[0]
         if tree.nGenWeight>0 : evWgt *= tree.GenWeights[0]
 
         #ready to fill the histograms

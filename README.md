@@ -14,8 +14,8 @@ cd UserCode/BJetEnergyPeak
 
 ## Prepare ntuples for local analysis
 
-This step should be done only once and it's only commissioned to be run at CERN in lxplus. 
-It skims the information needed for the analysis in simplified ntuples.
+This step should be done only once and it's only commissioned to be run at CERN in lxplus. It takes a couple of hours to run.
+It skims the information needed for the analysis in simplified ntuples and computes the main systematics.
 The starting point are the BTV performance ntuples. Further details on how to produce them can be found in 
 https://twiki.cern.ch/twiki/bin/view/CMS/BTagCommissioning2015. Before skimming three steps must be done:
 
