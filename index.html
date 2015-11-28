@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Bjetenergypeak by pfs</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Bjetenergypeak</h1>
+        <p></p>
+
+        <p class="view"><a href="https://github.com/pfs/BJetEnergyPeak">View the Project on GitHub <small>pfs/BJetEnergyPeak</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/pfs/BJetEnergyPeak/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pfs/BJetEnergyPeak/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pfs/BJetEnergyPeak">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="bjetenergypeak" class="anchor" href="#bjetenergypeak" aria-hidden="true"><span class="octicon octicon-link"></span></a>BJetEnergyPeak</h1>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>To install the code do</p>
+
+<pre><code>cmsrel CMSSW_7_4_14
+cd CMSSW_7_4_14/src
+cmsenv
+git clone git@github.com:pfs/BJetEnergyPeak.git UserCode/BJetEnergyPeak
+scram b
+cd UserCode/BJetEnergyPeak
+</code></pre>
+
+<h2>
+<a id="prepare-ntuples-for-local-analysis" class="anchor" href="#prepare-ntuples-for-local-analysis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prepare ntuples for local analysis</h2>
+
+<p>This step should be done only once and it's only commissioned to be run at CERN in lxplus. 
+It skims the information needed for the analysis in simplified ntuples.
+The starting point are the BTV performance ntuples. Further details on how to produce them can be found in 
+<a href="https://twiki.cern.ch/twiki/bin/view/CMS/BTagCommissioning2015">https://twiki.cern.ch/twiki/bin/view/CMS/BTagCommissioning2015</a>. Before skimming three steps must be done:</p>
+
+<ul>
+<li>Determine the pileup weights: the output is a ROOT file: data/puweights.root. Run the following script</li>
+</ul>
+
+<pre><code>python scripts/runPileupEstimation.py 
+</code></pre>
+
+<ul>
+<li>Determine the normalization weights for all the samples available. The output is a pickle file: data/genweights.pck. Run the following script</li>
+</ul>
+
+<pre><code>python scripts/produceNormalizationCache.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3
+</code></pre>
+
+<ul>
+<li>Project the expected b-tagging efficiency for the TTbar sample. The output is a pickle file: btagefficiencies. Run the following script</li>
+</ul>
+
+<pre><code>python scripts/projectExpectedBtagEff.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3/MC13TeV_TTJets
+</code></pre>
+
+<p>The files above will be stored by default in github, but if a reprocessing of the original ntuples occurs,
+they need to be run again. For the pileup estimation one needs to use the original json file (check with BTV experts).
+With the files updated you're now ready to skim the info needed for the ntuples. You can run the following command</p>
+
+<pre><code>python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -o analysis -n 8
+</code></pre>
+
+<h2>
+<a id="ntuple-content" class="anchor" href="#ntuple-content" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ntuple content</h2>
+
+<table>
+<thead>
+<tr>
+<th align="left">Variable</th>
+<th align="left">Type</th>
+<th align="left">Comments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Run</td>
+<td align="left">I</td>
+<td align="left">run number</td>
+</tr>
+<tr>
+<td align="left">Evt</td>
+<td align="left">I</td>
+<td align="left">event number</td>
+</tr>
+<tr>
+<td align="left">LumiBlock</td>
+<td align="left">I</td>
+<td align="left">lumi section</td>
+</tr>
+<tr>
+<td align="left">nPV</td>
+<td align="left">I</td>
+<td align="left">no. primary vertices</td>
+</tr>
+<tr>
+<td align="left">nPUtrue</td>
+<td align="left">F</td>
+<td align="left">no. pileup generated</td>
+</tr>
+<tr>
+<td align="left">PUWeights</td>
+<td align="left">[3]/F</td>
+<td align="left">pileup weights: nominal/down/up</td>
+</tr>
+<tr>
+<td align="left">LepSelEffWeights</td>
+<td align="left">[3]/F</td>
+<td align="left">lepton selection scale factors : nominal/down/up</td>
+</tr>
+<tr>
+<td align="left">TrigWord</td>
+<td align="left">I</td>
+<td align="left">each bit is a trigger fired</td>
+</tr>
+<tr>
+<td align="left">nLepton</td>
+<td align="left">I</td>
+<td align="left">no. selected leptons</td>
+</tr>
+<tr>
+<td align="left">Lepton_{pt,eta,phi}</td>
+<td align="left">[]/F</td>
+<td align="left">Lepton kinematics</td>
+</tr>
+<tr>
+<td align="left">Lepton_{id,gid,ch}</td>
+<td align="left">[]/I</td>
+<td align="left">Lepton id, matched id at gen. level and charge</td>
+</tr>
+<tr>
+<td align="left">MET_{pt,phi}</td>
+<td align="left">F</td>
+<td align="left">Missing transverse energy pT and phi</td>
+</tr>
+<tr>
+<td align="left">nGenWeight</td>
+<td align="left">I</td>
+<td align="left">no. generator level weights</td>
+</tr>
+<tr>
+<td align="left">GenWeights</td>
+<td align="left">[]/I</td>
+<td align="left">generator level weights</td>
+</tr>
+<tr>
+<td align="left">nJet</td>
+<td align="left">I</td>
+<td align="left">no. jets</td>
+</tr>
+<tr>
+<td align="left">Jet_{pt,eta,phi,mass}</td>
+<td align="left">[]/F</td>
+<td align="left">jet kinematics</td>
+</tr>
+<tr>
+<td align="left">Jet_flavour</td>
+<td align="left">I</td>
+<td align="left">jet flavour at gen. level</td>
+</tr>
+<tr>
+<td align="left">Jet_genpt</td>
+<td align="left">F</td>
+<td align="left">jet pt at gen. level</td>
+</tr>
+<tr>
+<td align="left">Jet_CombIVF</td>
+<td align="left">F</td>
+<td align="left">CSV discriminator</td>
+</tr>
+<tr>
+<td align="left">Jet_uncs</td>
+<td align="left">[][29]/F</td>
+<td align="left">Jet energy resolution and scale uncertainties</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="producing-and-plotting-a-simple-b-jet-energy-peak-distribution" class="anchor" href="#producing-and-plotting-a-simple-b-jet-energy-peak-distribution" aria-hidden="true"><span class="octicon octicon-link"></span></a>Producing and plotting a simple b-jet energy peak distribution</h2>
+
+<p>The following is an example of how to run locally over the skimmed ntuples to produce the b-jet energy peak.
+To run the event selection and basic filling of histograms using a pre-defined list of samples and cross sections one can use the following script </p>
+
+<pre><code>python scripts/runBJetEnergyPeak.py -i analysis -j data/samples_Run2015_25ns.json -o analysis/plots -n 8
+</code></pre>
+
+<p>The results are stored in ROOT files and can be plotted together and compared to data using</p>
+
+<pre><code>python scripts/plotter.py -i analysis/ -j data/samples_Run2015_25ns.json  -l 2444.
+</code></pre>
+
+<p>Under analysis/plots you'll find the files with the plots and also a file called plotter.root containing the histograms with the distributions
+normalized by integrated luminosity.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/pfs">pfs</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
