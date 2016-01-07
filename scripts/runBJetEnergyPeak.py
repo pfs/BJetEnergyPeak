@@ -18,6 +18,8 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
     histos={ 
         'nvtx'  :ROOT.TH1F('nvtx',';Vertex multiplicity; Events',30,0,30),
         'nbtags':ROOT.TH1F('nbtags',';b-tag multiplicity; Events',5,0,5),
+        'nbtagsM':ROOT.TH1F('nbtagsM',';b-tag multiplicity; Events',5,0,5),
+        'nbtagsT':ROOT.TH1F('nbtagsT',';b-tag multiplicity; Events',5,0,5),
         'bjeten':ROOT.TH1F('bjeten',';Energy [GeV]; Jets',30,0,300)
         }
     for key in histos:
@@ -34,6 +36,7 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
         if i%100==0 : sys.stdout.write('\r [ %d/100 ] done' %(int(float(100.*i)/float(totalEntries))) )
         #require at least two jets
         nJets, nBtags = 0, 0
+        nBtagsM, nBtagsT = 0, 0
         taggedJetsP4=[]
         for ij in xrange(0,tree.nJet):
 
@@ -49,7 +52,11 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
             if tree.Jet_CombIVF[ij]>0.605:
                 nBtags+=1
                 taggedJetsP4.append(jp4)
-        
+                if tree.Jet_CombIVF[ij]>0.890:
+                    nBtagsM+=1
+                    if tree.Jet_CombIVF[ij]>0.970:
+                        nBtagsT+=1
+
         if nJets<2 : continue
 
         #generator level weight only for MC
@@ -60,6 +67,8 @@ def runBJetEnergyPeak(inFileURL, outFileURL, xsec=None):
         #ready to fill the histograms
         histos['nvtx'].Fill(tree.nPV,evWgt)
         histos['nbtags'].Fill(nBtags,evWgt)
+        histos['nbtagsM'].Fill(nBtagsM,evWgt)
+        histos['nbtagsT'].Fill(nBtagsT,evWgt)
 
         #use up to two leading b-tagged jets
         for ij in xrange(0,len(taggedJetsP4)):

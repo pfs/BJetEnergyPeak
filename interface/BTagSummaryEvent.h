@@ -6,6 +6,8 @@ struct BTagSummaryEvent_t
   Int_t Run,Evt,LumiBlock;
   Int_t nPV;
   Int_t ttbar_chan, ttbar_trigWord;
+  Int_t ttbar_ng, ttbar_gid[25];
+  Float_t ttbar_gpt[25];
   Int_t ttbar_nl, ttbar_lid[10], ttbar_lgid[10], ttbar_lch[10];
   Float_t ttbar_lpt[10], ttbar_leta[10], ttbar_lphi[10], ttbar_lm[10];
   Float_t ttbar_metpt,ttbar_metphi;

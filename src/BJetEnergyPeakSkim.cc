@@ -58,6 +58,7 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
 {
   BTagSummaryEvent_t ev;
 
+  Float_t TopPtWgt(1.0);
   Float_t LepSelEffWeights[3]={1.0,1.0,1.0};
   Float_t PUWeights[3]={1.0,1.0,1.0};
   Float_t JetUncs[100][29];
@@ -73,9 +74,10 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
   outT->Branch("Evt"        ,    &ev.Evt,            "Evt/I");
   outT->Branch("LumiBlock"  ,    &ev.LumiBlock,      "LumiBlock/I");
   outT->Branch("nPV"        ,    &ev.nPV,            "nPV/I");
-  outT->Branch("nPUtrue",        &ev.nPUtrue,        "nPUtrue/F");
+  outT->Branch("nPUtrue",        &ev.nPUtrue,        "nPUtrue/F");  
   outT->Branch("PUWeights",      PUWeights,          "PUWeights[3]/F");
   outT->Branch("LepSelEffWeights",  LepSelEffWeights,      "LepSelEffWeights[3]/F");
+  outT->Branch("TopPtWgt",       &TopPtWgt,          "TopPtWgt/F");
   outT->Branch("TrigWord",       &ev.ttbar_trigWord, "TrigWord/I");
   outT->Branch("nLepton"   ,     &ev.ttbar_nl,       "nLepton/I");
   outT->Branch("Lepton_pt"  ,     ev.ttbar_lpt,      "Lepton_pt[nLepton]/F"); 
@@ -108,6 +110,17 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
   inT->SetBranchAddress("nPUtrue",        &ev.nPUtrue );
   inT->SetBranchAddress("ttbar_chan" ,    &ev.ttbar_chan);
   inT->SetBranchAddress("ttbar_trigWord", &ev.ttbar_trigWord);
+  if(inT->GetBranch("ttbar_ng"))
+    {
+      cout << "Found generator level branch" << endl;
+      inT->SetBranchAddress("ttbar_ng", &ev.ttbar_ng);
+      inT->SetBranchAddress("ttbar_gpt", ev.ttbar_gpt);
+      inT->SetBranchAddress("ttbar_gid", ev.ttbar_gid);
+    }
+  else
+    {
+      ev.ttbar_ng=0;
+    }
   inT->SetBranchAddress("ttbar_nl"   ,    &ev.ttbar_nl);
   inT->SetBranchAddress("ttbar_lpt"  ,     ev.ttbar_lpt); 
   inT->SetBranchAddress("ttbar_leta" ,     ev.ttbar_leta);
@@ -157,6 +170,14 @@ void BJetEnergyPeakSkim::processFile(TString inFile, TString outFile,TH1F *xsecW
       if(xsecWgt)
 	for(Int_t k=0; k<ev.ttbar_nw; k++) 
 	  ev.ttbar_w[k] *= xsecWgt->GetBinContent(k+1);
+
+      //top pt wgt
+      TopPtWgt=1.0;
+      for(Int_t ig=0; ig<ev.ttbar_ng; ig++)
+	{
+	  if(float(ev.ttbar_gid[ig])!=6) continue;
+	  TopPtWgt *= sqrt(exp(0.156-0.00137*ev.ttbar_gpt[ig])); 
+	}
 
       //pileup weights
       if(!isData && puWgtGr_.size()==3)
