@@ -38,6 +38,32 @@ With the files updated you're now ready to skim the info needed for the ntuples.
 python scripts/skimBJetEnergyPeakNtuples.py -i /store/group/phys_btag/performance/TTbar/2015_25ns/8622ee3 -o analysis -n 8
 ```
 
+## Ntuple content
+
+| Variable | Type | Comments |
+| :------------ | :------------ | :------------ | 
+| Run | I | run number |
+| Evt | I | event number |
+| LumiBlock | I | lumi section |
+| nPV | I | no. primary vertices |
+| nPUtrue | F | no. pileup generated |
+| PUWeights | [3]/F | pileup weights: nominal/down/up |
+| LepSelEffWeights | [3]/F | lepton selection scale factors : nominal/down/up |
+| TrigWord | I | each bit is a trigger fired |
+| nLepton | I | no. selected leptons |
+| Lepton_{pt,eta,phi} | []/F | Lepton kinematics |
+| Lepton_{id,gid,ch} | []/I | Lepton id, matched id at gen. level and charge |
+| MET_{pt,phi} | F | Missing transverse energy pT and phi |
+| nGenWeight | I | no. generator level weights |
+| GenWeights | []/I | generator level weights |
+| nJet | I | no. jets |
+| Jet_{pt,eta,phi,mass} | []/F | jet kinematics |
+| Jet_flavour | I | jet flavour at gen. level |
+| Jet_genpt | F | jet pt at gen. level |
+| Jet_CombIVF  | F| CSV discriminator |
+| Jet_uncs | [][29]/F | Jet energy resolution and scale uncertainties |
+
+
 ## Producing and plotting a simple b-jet energy peak distribution
 
 The following is an example of how to run locally over the skimmed ntuples to produce the b-jet energy peak.
